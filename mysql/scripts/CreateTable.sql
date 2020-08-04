@@ -1,4 +1,4 @@
-CREATE MODEL IF NOT EXISTS ngcp_db;
+CREATE DATABASE IF NOT EXISTS ngcp_db;
 USE ngcp_db;
 CREATE TABLE IF NOT EXISTS `radios` (
 	`radio_id` INT(4) NOT NULL,
