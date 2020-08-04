@@ -1,8 +1,36 @@
 <?php
-class DataHandler {
-	private $conn = null;
-	public function __construct($conn) {
+class Model {
+	private $host;
+	private $username;
+	private $password;
+	private $dbName;
+	private $conn;
+
+	public function __construct($host, $username, $password, $dbName) {
+		$this->host = $host;
+		$this->username = $username;
+		$this->password = $password;
+		$this->dbName = $dbName;
+	}
+
+	public function connect() {
+		// Create connection
+		$conn = new mysqli(
+			$this->host,
+			$this->username,
+			$this->password,
+			$this->dbName
+		);
+		// Check connection
+		if ($conn->connect_error) {
+			die("Connection failed: " . $conn->connect_error);
+		}
 		$this->conn = $conn;
+	}
+
+	public function disconnect() {
+		// Close connection
+		$this->conn->close();
 	}
 
 	public function insertRadio($radio_id, $alias, $locations) {

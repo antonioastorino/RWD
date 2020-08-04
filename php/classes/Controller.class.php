@@ -1,15 +1,20 @@
 <?php
-$path = $_SERVER['DOCUMENT_ROOT'] . "/common/RequestType.class.php";
-$path = $_SERVER['DOCUMENT_ROOT'] . "/common/Response.class.php";
-require($path);
+require_once(__ROOT__ . "/classes/View.class.php");
 
-class RequestHandler {
+class Controller {
+	public static function uri2params($uri = null) {
+		$retVal = null;
+		if ($uri != null) {
+			$retVal = explode('/', substr($uri, 1));
+		}
+		return $retVal;
+	}
 
 	// Given parameters and received payload, determine which type of POST request is received
 	private static function retrievePostRequestType($params, $payload) {
 		// POST requests must have a payload and at least 2 parameters
 		if ($payload == null || $params == null) {
-			return RequestType::INVALID_REQUEST;
+			return INVALID_REQUEST;
 		}
 		// Remove non-empty parameters
 		$params = array_filter($params, 'strlen');
@@ -20,17 +25,17 @@ class RequestHandler {
 				case 2:
 					// Check that the alias and locations are present
 					if (isset($payload['alias']) && isset($payload['allowed_locations'])) {
-						return RequestType::POST_ADD_RADIO;
+						return POST_ADD_RADIO;
 					}
 				case 3:
 					if ($params[2] == 'location' && isset($payload['location'])) {
-						return RequestType::POST_ADD_RADIO_LOCATION;
+						return POST_ADD_RADIO_LOCATION;
 					}
 				default:
-					return RequestType::INVALID_REQUEST;
+					return INVALID_REQUEST;
 			}
 		}
-		return RequestType::UNSUPPORTED_REQUEST;
+		return UNSUPPORTED_REQUEST;
 	}
 
 	// Given parameters and received payload, determine which type of GET request is received
@@ -44,17 +49,19 @@ class RequestHandler {
 			switch ($paramCount) {
 				case 3:
 					if ($params[2] == 'location') {
-						return RequestType::GET_RADIO_LOCATION;
+						return GET_RADIO_LOCATION;
 					}
 				default:
-					return RequestType::INVALID_REQUEST;
+					return INVALID_REQUEST;
 			}
 		}
-		return RequestType::UNSUPPORTED_REQUEST;
+		return UNSUPPORTED_REQUEST;
 	}
 
 	// Process the request and populate the response
-	public static function process($reqMethod, $params, $dataHandler) {
+	public static function processRequest($reqMethod, $uri, $db) {
+		$params = self::uri2params($uri);
+
 		$reqType = 0;
 		if ($reqMethod == 'POST') {
 			// Handle POST request
@@ -74,44 +81,45 @@ class RequestHandler {
 
 		// Generate response
 		switch ($reqType) {
-			case RequestType::POST_ADD_RADIO:
+			case POST_ADD_RADIO:
 				$alias = $payload['alias'];
 				// Make sure the allowed locations are present
 				$locations = null;
 				$locations = $payload['allowed_locations'];
 				if (!is_array($locations)) {
-					Response::make(403, "Allowed locations must be an array");
+					View::makeResponse(403, "Allowed locations must be an array");
 					break;
 				}
 				$radio_id = $params[1];
-				Response::make(
-					$dataHandler->insertRadio($radio_id, $alias, $locations)
+				View::makeResponse(
+					$db->insertRadio($radio_id, $alias, $locations)
 				);
 				break;
 
-			case RequestType::POST_ADD_RADIO_LOCATION:
+			case POST_ADD_RADIO_LOCATION:
 				// Check that the alias is present
 				$location = $payload['location'];
 				$radio_id = $params[1];
-				Response::make($dataHandler->setLocation($radio_id, $location));
+				View::makeResponse($db->setLocation($radio_id, $location));
 				break;
 
-			case RequestType::GET_RADIO_LOCATION:
+			case GET_RADIO_LOCATION:
 				$location = null;
 				$radio_id = $params[1];
-				$response_code = $dataHandler->getLocation($radio_id, $location);
+				$response_code = $db->getLocation($radio_id, $location);
+				View::makeResponse($response_code);
 				if ($response_code == 200) {
 					$json = json_encode(array('location' => $location));
-					Response::make(200, $json);
+					View::makeResponse($response_code, $json);
 				}
 				break;
 
-			case RequestType::INVALID_REQUEST:
-				Response::make(404, "Invalid request");
+			case INVALID_REQUEST:
+				View::makeResponse(404, "Invalid request");
 				break;
 
 			default:
-				Response::make(403, "Unhandled request type");
+				View::makeResponse(403, "Unhandled request type");
 		}
 	}
 }
