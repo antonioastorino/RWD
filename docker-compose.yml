@@ -1,0 +1,33 @@
+version: '3.3'  # find it at https://docs.docker.com/compose/compose-file/
+                #+but you'll get an error if it is not 2.2 or 3.3 
+services:
+  web:
+    container_name: php73
+    depends_on:
+      - db
+    restart: always
+    volumes: # local ./php folder is mapped to /var/www/html in the container
+      - ./php:/var/www/html
+      - ./apache-conf:/etc/apache2/sites-enabled
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    ports: # PORT_OUTSIDE:PORT_INSIDE
+      - 8080:80
+  db:
+    container_name: mysql8
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password --init-file="/data/application/CreateTable.sql"
+    volumes:
+      - ./mysql/scripts:/data/application
+      - ./mysql/data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: db
+      # MYSQL_ROOT_USER: root
+      MYSQL_USER: antonio
+      MYSQL_PASSWORD: antonio
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 6033:3306
+
