@@ -1,5 +1,5 @@
 <?php
-class RequestHandler {
+class DataHandler {
 	private $conn = null;
 	public function __construct($conn) {
 		$this->conn = $conn;
