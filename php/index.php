@@ -20,7 +20,7 @@ if ($reqMethod != 'POST' && $reqMethod != 'GET') {
 }
 
 // Connect to DB
-$db = new Model('db', 'root', 'root', 'ngcp_db');
+$db = new Model('db', 'antonio', 'antonio', 'ngcp_db');
 $db->connect();
 
 // Process the request

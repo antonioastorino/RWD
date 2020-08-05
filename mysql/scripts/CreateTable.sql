@@ -13,5 +13,5 @@ CREATE TABLE IF NOT EXISTS `allowed_locations` (
 	UNIQUE(`radio_id`, `location`),
 	FOREIGN KEY (`radio_id`) REFERENCES `radios`(`radio_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB;
-GRANT ALL PRIVILEGES ON *.* TO 'antonio'@'%';
+GRANT ALL PRIVILEGES ON *.* TO 'antonio'@'%' IDENTIFIED BY 'antonio';
 FLUSH PRIVILEGES;
