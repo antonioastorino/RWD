@@ -1,4 +1,4 @@
-# NGCP Challenge
+# RWD - REST with Docker
 ## User instructions
 Under the assumption that your system has already `Docker` installed:
 
